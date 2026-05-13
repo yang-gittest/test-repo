@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>請求状況サンプルページ</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --line: #d8dee4;
+      --green: #157f5f;
+      --green-soft: #dff4eb;
+      --blue: #1f6feb;
+      --blue-soft: #e8f1ff;
+      --amber: #a15c00;
+      --amber-soft: #fff1d6;
+      --red: #b42318;
+      --red-soft: #ffe4e0;
+      --shadow: 0 14px 36px rgba(31, 41, 51, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .app-shell { min-height: 100vh; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .brand { display: grid; gap: 2px; }
+    h1 { margin: 0; font-size: 22px; letter-spacing: 0; }
+    .brand span, .updated { color: var(--muted); font-size: 12px; }
+    .main { padding: 22px 28px 32px; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .metric {
+      min-height: 112px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .metric-label { color: var(--muted); font-size: 12px; }
+    .metric-value { margin-top: 8px; font-size: 28px; font-weight: 750; }
+    .metric-note { margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-title { margin: 0; font-size: 16px; }
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) auto;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+    .search {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font: inherit;
+      background: var(--surface);
+    }
+    .filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 11px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .filter-button.active { border-color: var(--green); background: var(--green-soft); color: #07513b; }
+    .table-wrap { overflow: auto; max-height: 560px; }
+    table { width: 100%; border-collapse: collapse; min-width: 1120px; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+    th { position: sticky; top: 0; z-index: 2; background: #f8fafc; color: var(--muted); font-size: 12px; font-weight: 700; }
+    td.amount, th.amount { text-align: right; }
+    tr:hover td { background: #f9fbfa; }
+    .customer { display: grid; gap: 2px; }
+    .customer small { color: var(--muted); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge-paid { background: var(--green-soft); color: var(--green); }
+    .badge-waiting { background: var(--amber-soft); color: var(--amber); }
+    .badge-unissued { background: var(--red-soft); color: var(--red); }
+    .badge-invoice { background: var(--blue-soft); color: var(--blue); }
+    .action-button {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 10px;
+      background: var(--surface);
+      font: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .action-button.primary { border-color: var(--green); background: var(--green); color: #fff; }
+    .action-button:disabled { cursor: not-allowed; color: var(--muted); background: #f3f4f6; }
+    .empty { padding: 36px 18px; color: var(--muted); text-align: center; }
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      background: #fbfcfd;
+      flex-wrap: wrap;
+    }
+    .pagination-info { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .pagination-controls { display: flex; align-items: center; gap: 4px; }
+    .page-button {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .page-button:hover:not(:disabled) { background: #f3f4f6; }
+    .page-button.active { border-color: var(--green); background: var(--green); color: #fff; cursor: default; }
+    .page-button:disabled { cursor: not-allowed; color: var(--muted); background: #f3f4f6; }
+    .page-button.ellipsis { border: none; background: none; cursor: default; color: var(--muted); }
+    .page-size-select {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font: inherit;
+      font-size: 13px;
+      background: var(--surface);
+      cursor: pointer;
+    }
+    @media (max-width: 960px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .workspace { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .main, .topbar { padding-left: 16px; padding-right: 16px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 20px; }
+      .metric-value { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <h1>請求状況サンプルページ</h1>
+        <span>請求書発行状況サンプルデータから作成</span>
+      </div>
+      <div class="updated" id="updatedLabel"></div>
+    </header>
+    <main class="main">
+      <section class="summary-grid" aria-label="サマリー">
+        <article class="metric"><div class="metric-label">対象件数</div><div class="metric-value" id="totalCount">-</div><div class="metric-note">2026年5月請求分</div></article>
+        <article class="metric"><div class="metric-label">領収書発行済み</div><div class="metric-value" id="receiptIssued">-</div><div class="metric-note" id="receiptIssuedAmount">-</div></article>
+        <article class="metric"><div class="metric-label">入金待ち</div><div class="metric-value" id="waitingCount">-</div><div class="metric-note" id="waitingAmount">-</div></article>
+        <article class="metric"><div class="metric-label">請求書未発行</div><div class="metric-value" id="unissuedCount">-</div><div class="metric-note" id="unissuedAmount">-</div></article>
+      </section>
+      <section class="workspace">
+        <div class="panel">
+          <div class="panel-header"><h2 class="panel-title">明細一覧</h2><span id="visibleCount" class="updated"></span></div>
+          <div class="controls">
+            <input class="search" id="searchInput" type="search" placeholder="顧客名・契約ID・サービス・倉庫で検索">
+            <div class="filter-buttons" id="filterButtons">
+              <button class="filter-button active" data-status="all">すべて</button>
+              <button class="filter-button" data-status="領収書発行済み">発行済み</button>
+              <button class="filter-button" data-status="入金待ち">入金待ち</button>
+              <button class="filter-button" data-status="請求書未発行">未発行</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>顧客</th><th>サービス</th><th>倉庫</th><th>請求月</th><th>請求状況</th><th class="amount">請求金額</th><th>支払期限</th><th>支払日</th><th>操作</th></tr></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+            <div class="empty" id="emptyState" hidden>条件に一致する明細はありません。</div>
+          </div>
+          <div class="pagination-bar" id="paginationBar">
+            <div class="pagination-info" id="paginationInfo"></div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <select class="page-size-select" id="pageSizeSelect">
+                <option value="10">10件</option>
+                <option value="25" selected>25件</option>
+                <option value="50">50件</option>
+              </select>
+              <div class="pagination-controls" id="paginationControls"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    const rows = [{"customerId":"CUST0001","customerName":"株式会社青葉アーカイブ","contractId":"CT000001","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":23531,"usageGb":2826,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/07","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0002","customerName":"株式会社青葉ロジスティクス","contractId":"CT000002","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":3778,"usageGb":3495,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0003","customerName":"株式会社青葉文書管理","contractId":"CT000003","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/07","amount":7446,"usageGb":4518,"invoiceStatus":"発行済み","dueDate":"2026/06/06","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0004","customerName":"株式会社青葉デジタル保管","contractId":"CT000004","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":11442,"usageGb":2719,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/06/02","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0005","customerName":"株式会社青葉ビジネスサポート","contractId":"CT000005","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":17365,"usageGb":2892,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/08","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0006","customerName":"株式会社青葉メディアサービス","contractId":"CT000006","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":48670,"usageGb":3727,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0007","customerName":"株式会社青葉データソリューション","contractId":"CT000007","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":4431,"usageGb":2229,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0008","customerName":"株式会社青葉オフィス管理","contractId":"CT000008","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":74301,"usageGb":2521,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/19","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0009","customerName":"株式会社青葉クラウド文書","contractId":"CT000009","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":46523,"usageGb":2069,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/09","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0010","customerName":"株式会社青葉総合倉庫","contractId":"CT000010","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":32318,"usageGb":1898,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0011","customerName":"株式会社みなとアーカイブ","contractId":"CT000011","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":61370,"usageGb":998,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/14","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0012","customerName":"株式会社みなとロジスティクス","contractId":"CT000012","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":27467,"usageGb":1587,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0013","customerName":"株式会社みなと文書管理","contractId":"CT000013","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":5069,"usageGb":2594,"invoiceStatus":"支払完了","dueDate":"2026/05/31","paidDate":"2026/05/22","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0014","customerName":"株式会社みなとデジタル保管","contractId":"CT000014","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":48111,"usageGb":989,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0015","customerName":"株式会社みなとビジネスサポート","contractId":"CT000015","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/07","amount":14619,"usageGb":4399,"invoiceStatus":"発行済み","dueDate":"2026/06/06","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0016","customerName":"株式会社みなとメディアサービス","contractId":"CT000016","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":15201,"usageGb":1526,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/23","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0017","customerName":"株式会社みなとデータソリューション","contractId":"CT000017","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":64151,"usageGb":1579,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0018","customerName":"株式会社みなとオフィス管理","contractId":"CT000018","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":9895,"usageGb":1782,"invoiceStatus":"発行済み","dueDate":"2026/06/02","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0019","customerName":"株式会社みなとクラウド文書","contractId":"CT000019","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":49705,"usageGb":3976,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/27","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0020","customerName":"株式会社みなと総合倉庫","contractId":"CT000020","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":47903,"usageGb":2275,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0021","customerName":"株式会社桜アーカイブ","contractId":"CT000021","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":7548,"usageGb":4839,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0022","customerName":"株式会社桜ロジスティクス","contractId":"CT000022","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":28923,"usageGb":4307,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/10","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0023","customerName":"株式会社桜文書管理","contractId":"CT000023","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":47965,"usageGb":4898,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/13","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0024","customerName":"株式会社桜デジタル保管","contractId":"CT000024","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":32931,"usageGb":2328,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/27","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0025","customerName":"株式会社桜ビジネスサポート","contractId":"CT000025","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":51371,"usageGb":833,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0026","customerName":"株式会社桜メディアサービス","contractId":"CT000026","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":27704,"usageGb":1600,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/28","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0027","customerName":"株式会社桜データソリューション","contractId":"CT000027","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":48642,"usageGb":2436,"invoiceStatus":"支払完了","dueDate":"2026/06/05","paidDate":"2026/06/03","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0028","customerName":"株式会社桜オフィス管理","contractId":"CT000028","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":8051,"usageGb":1873,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0029","customerName":"株式会社桜クラウド文書","contractId":"CT000029","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":26890,"usageGb":2966,"invoiceStatus":"発行済み","dueDate":"2026/06/01","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0030","customerName":"株式会社桜総合倉庫","contractId":"CT000030","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":35101,"usageGb":1479,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0031","customerName":"株式会社白樺アーカイブ","contractId":"CT000031","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":30286,"usageGb":2486,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0032","customerName":"株式会社白樺ロジスティクス","contractId":"CT000032","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":15012,"usageGb":125,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0033","customerName":"株式会社白樺文書管理","contractId":"CT000033","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":6453,"usageGb":4385,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0034","customerName":"株式会社白樺デジタル保管","contractId":"CT000034","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":38594,"usageGb":1046,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0035","customerName":"株式会社白樺ビジネスサポート","contractId":"CT000035","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":29479,"usageGb":2257,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0036","customerName":"株式会社白樺メディアサービス","contractId":"CT000036","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":26008,"usageGb":382,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0037","customerName":"株式会社白樺データソリューション","contractId":"CT000037","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":29841,"usageGb":456,"invoiceStatus":"発行済み","dueDate":"2026/06/01","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0038","customerName":"株式会社白樺オフィス管理","contractId":"CT000038","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":64434,"usageGb":4543,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/09","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0039","customerName":"株式会社白樺クラウド文書","contractId":"CT000039","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":34685,"usageGb":2403,"invoiceStatus":"発行済み","dueDate":"2026/06/02","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0040","customerName":"株式会社白樺総合倉庫","contractId":"CT000040","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":49404,"usageGb":1044,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0041","customerName":"株式会社東雲アーカイブ","contractId":"CT000041","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":11470,"usageGb":4031,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/25","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0042","customerName":"株式会社東雲ロジスティクス","contractId":"CT000042","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":8303,"usageGb":850,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/20","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0043","customerName":"株式会社東雲文書管理","contractId":"CT000043","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":26144,"usageGb":110,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/07","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0044","customerName":"株式会社東雲デジタル保管","contractId":"CT000044","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":71513,"usageGb":4712,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0045","customerName":"株式会社東雲ビジネスサポート","contractId":"CT000045","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":22393,"usageGb":2339,"invoiceStatus":"支払完了","dueDate":"2026/06/05","paidDate":"2026/05/21","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0046","customerName":"株式会社東雲メディアサービス","contractId":"CT000046","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":81253,"usageGb":3855,"invoiceStatus":"発行済み","dueDate":"2026/05/31","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0047","customerName":"株式会社東雲データソリューション","contractId":"CT000047","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":18581,"usageGb":3931,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0048","customerName":"株式会社東雲オフィス管理","contractId":"CT000048","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":17958,"usageGb":3618,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/14","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0049","customerName":"株式会社東雲クラウド文書","contractId":"CT000049","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":80876,"usageGb":2801,"invoiceStatus":"支払完了","dueDate":"2026/05/31","paidDate":"2026/05/07","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0050","customerName":"株式会社東雲総合倉庫","contractId":"CT000050","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":32902,"usageGb":1520,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0051","customerName":"株式会社晴海アーカイブ","contractId":"CT000051","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":26818,"usageGb":430,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/23","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0052","customerName":"株式会社晴海ロジスティクス","contractId":"CT000052","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":35039,"usageGb":2078,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0053","customerName":"株式会社晴海文書管理","contractId":"CT000053","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":40332,"usageGb":3923,"invoiceStatus":"支払完了","dueDate":"2026/06/05","paidDate":"2026/05/29","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0054","customerName":"株式会社晴海デジタル保管","contractId":"CT000054","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/07","amount":23186,"usageGb":944,"invoiceStatus":"発行済み","dueDate":"2026/06/06","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0055","customerName":"株式会社晴海ビジネスサポート","contractId":"CT000055","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":6284,"usageGb":545,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/12","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0056","customerName":"株式会社晴海メディアサービス","contractId":"CT000056","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":38054,"usageGb":3292,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/06/01","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0057","customerName":"株式会社晴海データソリューション","contractId":"CT000057","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":35754,"usageGb":4038,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0058","customerName":"株式会社晴海オフィス管理","contractId":"CT000058","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":25792,"usageGb":616,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0059","customerName":"株式会社晴海クラウド文書","contractId":"CT000059","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":51594,"usageGb":4736,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0060","customerName":"株式会社晴海総合倉庫","contractId":"CT000060","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":5223,"usageGb":449,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0061","customerName":"株式会社銀座アーカイブ","contractId":"CT000061","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":25744,"usageGb":1252,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/15","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0062","customerName":"株式会社銀座ロジスティクス","contractId":"CT000062","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":63961,"usageGb":1232,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0063","customerName":"株式会社銀座文書管理","contractId":"CT000063","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":53572,"usageGb":4620,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/17","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0064","customerName":"株式会社銀座デジタル保管","contractId":"CT000064","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":41062,"usageGb":2499,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0065","customerName":"株式会社銀座ビジネスサポート","contractId":"CT000065","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":14684,"usageGb":707,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0066","customerName":"株式会社銀座メディアサービス","contractId":"CT000066","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":90383,"usageGb":2043,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/29","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0067","customerName":"株式会社銀座データソリューション","contractId":"CT000067","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":64154,"usageGb":980,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/22","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0068","customerName":"株式会社銀座オフィス管理","contractId":"CT000068","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":12536,"usageGb":4581,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/31","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0069","customerName":"株式会社銀座クラウド文書","contractId":"CT000069","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/07","amount":32957,"usageGb":3419,"invoiceStatus":"支払完了","dueDate":"2026/06/06","paidDate":"2026/05/17","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0070","customerName":"株式会社銀座総合倉庫","contractId":"CT000070","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":39981,"usageGb":4976,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/12","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0071","customerName":"株式会社新橋アーカイブ","contractId":"CT000071","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":39404,"usageGb":4893,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/15","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0072","customerName":"株式会社新橋ロジスティクス","contractId":"CT000072","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":23060,"usageGb":1858,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0073","customerName":"株式会社新橋文書管理","contractId":"CT000073","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":46141,"usageGb":4290,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0074","customerName":"株式会社新橋デジタル保管","contractId":"CT000074","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":20187,"usageGb":3126,"invoiceStatus":"発行済み","dueDate":"2026/06/01","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0075","customerName":"株式会社新橋ビジネスサポート","contractId":"CT000075","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":7649,"usageGb":3700,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/30","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0076","customerName":"株式会社新橋メディアサービス","contractId":"CT000076","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":96727,"usageGb":3636,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/29","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0077","customerName":"株式会社新橋データソリューション","contractId":"CT000077","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":31667,"usageGb":2445,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0078","customerName":"株式会社新橋オフィス管理","contractId":"CT000078","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":26349,"usageGb":4831,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0079","customerName":"株式会社新橋クラウド文書","contractId":"CT000079","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":28390,"usageGb":3522,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/05","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0080","customerName":"株式会社新橋総合倉庫","contractId":"CT000080","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":27988,"usageGb":2511,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0081","customerName":"株式会社日本橋アーカイブ","contractId":"CT000081","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":36447,"usageGb":4668,"invoiceStatus":"発行済み","dueDate":"2026/06/02","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0082","customerName":"株式会社日本橋ロジスティクス","contractId":"CT000082","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":90581,"usageGb":503,"invoiceStatus":"発行済み","dueDate":"2026/06/01","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0083","customerName":"株式会社日本橋文書管理","contractId":"CT000083","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":34149,"usageGb":822,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/06","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0084","customerName":"株式会社日本橋デジタル保管","contractId":"CT000084","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":62874,"usageGb":1712,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/15","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0085","customerName":"株式会社日本橋ビジネスサポート","contractId":"CT000085","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":103953,"usageGb":1738,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/10","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0086","customerName":"株式会社日本橋メディアサービス","contractId":"CT000086","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":18814,"usageGb":2177,"invoiceStatus":"発行済み","dueDate":"2026/06/02","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0087","customerName":"株式会社日本橋データソリューション","contractId":"CT000087","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":43242,"usageGb":675,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/16","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0088","customerName":"株式会社日本橋オフィス管理","contractId":"CT000088","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":20268,"usageGb":1296,"invoiceStatus":"発行済み","dueDate":"2026/05/31","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0089","customerName":"株式会社日本橋クラウド文書","contractId":"CT000089","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":85169,"usageGb":1974,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/06/01","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0090","customerName":"株式会社日本橋総合倉庫","contractId":"CT000090","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":10054,"usageGb":1433,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0091","customerName":"株式会社麹町アーカイブ","contractId":"CT000091","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":20742,"usageGb":4531,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/19","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0092","customerName":"株式会社麹町ロジスティクス","contractId":"CT000092","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":96284,"usageGb":624,"invoiceStatus":"支払完了","dueDate":"2026/06/05","paidDate":"2026/05/16","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0093","customerName":"株式会社麹町文書管理","contractId":"CT000093","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":52423,"usageGb":1292,"invoiceStatus":"支払完了","dueDate":"2026/06/05","paidDate":"2026/05/17","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0094","customerName":"株式会社麹町デジタル保管","contractId":"CT000094","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":44926,"usageGb":31,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/19","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0095","customerName":"株式会社麹町ビジネスサポート","contractId":"CT000095","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":28895,"usageGb":3356,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/07","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0096","customerName":"株式会社麹町メディアサービス","contractId":"CT000096","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":69743,"usageGb":3700,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/12","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0097","customerName":"株式会社麹町データソリューション","contractId":"CT000097","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":24110,"usageGb":4874,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/28","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0098","customerName":"株式会社麹町オフィス管理","contractId":"CT000098","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":50776,"usageGb":3859,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/18","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0099","customerName":"株式会社麹町クラウド文書","contractId":"CT000099","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/07","amount":26810,"usageGb":2395,"invoiceStatus":"支払完了","dueDate":"2026/06/06","paidDate":"2026/06/02","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0100","customerName":"株式会社麹町総合倉庫","contractId":"CT000100","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":49994,"usageGb":277,"invoiceStatus":"発行済み","dueDate":"2026/05/31","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0101","customerName":"株式会社丸の内アーカイブ","contractId":"CT000101","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":30829,"usageGb":1906,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0102","customerName":"株式会社丸の内ロジスティクス","contractId":"CT000102","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":58649,"usageGb":2370,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0103","customerName":"株式会社丸の内文書管理","contractId":"CT000103","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":89012,"usageGb":2326,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0104","customerName":"株式会社丸の内デジタル保管","contractId":"CT000104","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":59244,"usageGb":3729,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0105","customerName":"株式会社丸の内ビジネスサポート","contractId":"CT000105","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":67021,"usageGb":593,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0106","customerName":"株式会社丸の内メディアサービス","contractId":"CT000106","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":55287,"usageGb":1922,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/12","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0107","customerName":"株式会社丸の内データソリューション","contractId":"CT000107","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":15738,"usageGb":2177,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0108","customerName":"株式会社丸の内オフィス管理","contractId":"CT000108","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":54930,"usageGb":4841,"invoiceStatus":"支払完了","dueDate":"2026/06/05","paidDate":"2026/05/18","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0109","customerName":"株式会社丸の内クラウド文書","contractId":"CT000109","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":44083,"usageGb":1630,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0110","customerName":"株式会社丸の内総合倉庫","contractId":"CT000110","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":12968,"usageGb":3492,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0111","customerName":"株式会社芝浦アーカイブ","contractId":"CT000111","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/07","amount":9683,"usageGb":950,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0112","customerName":"株式会社芝浦ロジスティクス","contractId":"CT000112","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":78068,"usageGb":4471,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/20","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0113","customerName":"株式会社芝浦文書管理","contractId":"CT000113","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":50249,"usageGb":1851,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0114","customerName":"株式会社芝浦デジタル保管","contractId":"CT000114","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":27016,"usageGb":1230,"invoiceStatus":"支払完了","dueDate":"2026/06/03","paidDate":"2026/05/25","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0115","customerName":"株式会社芝浦ビジネスサポート","contractId":"CT000115","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":37366,"usageGb":2186,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0116","customerName":"株式会社芝浦メディアサービス","contractId":"CT000116","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":50500,"usageGb":1175,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/28","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0117","customerName":"株式会社芝浦データソリューション","contractId":"CT000117","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":66382,"usageGb":594,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0118","customerName":"株式会社芝浦オフィス管理","contractId":"CT000118","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":11050,"usageGb":498,"invoiceStatus":"発行済み","dueDate":"2026/05/31","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0119","customerName":"株式会社芝浦クラウド文書","contractId":"CT000119","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":13095,"usageGb":1369,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0120","customerName":"株式会社芝浦総合倉庫","contractId":"CT000120","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":13219,"usageGb":2529,"invoiceStatus":"支払完了","dueDate":"2026/06/04","paidDate":"2026/05/15","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0121","customerName":"株式会社渋谷アーカイブ","contractId":"CT000121","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":18750,"usageGb":3210,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/20","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0122","customerName":"株式会社渋谷ロジスティクス","contractId":"CT000122","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":42300,"usageGb":1850,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0123","customerName":"株式会社渋谷文書管理","contractId":"CT000123","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":31500,"usageGb":2670,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/25","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0124","customerName":"株式会社渋谷デジタル保管","contractId":"CT000124","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":67800,"usageGb":1430,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0125","customerName":"株式会社渋谷ビジネスサポート","contractId":"CT000125","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":12340,"usageGb":3890,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0126","customerName":"株式会社渋谷メディアサービス","contractId":"CT000126","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":55120,"usageGb":2100,"invoiceStatus":"支払完了","dueDate":"2026/05/31","paidDate":"2026/05/28","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0127","customerName":"株式会社渋谷データソリューション","contractId":"CT000127","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/07","amount":29670,"usageGb":4500,"invoiceStatus":"発行済み","dueDate":"2026/06/06","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0128","customerName":"株式会社渋谷オフィス管理","contractId":"CT000128","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":83400,"usageGb":3750,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/18","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0129","customerName":"株式会社渋谷クラウド文書","contractId":"CT000129","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":9870,"usageGb":1670,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0130","customerName":"株式会社渋谷総合倉庫","contractId":"CT000130","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":38900,"usageGb":2890,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0131","customerName":"株式会社品川アーカイブ","contractId":"CT000131","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":45600,"usageGb":1980,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/14","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0132","customerName":"株式会社品川ロジスティクス","contractId":"CT000132","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":16780,"usageGb":3450,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0133","customerName":"株式会社品川文書管理","contractId":"CT000133","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":72300,"usageGb":4120,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/22","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0134","customerName":"株式会社品川デジタル保管","contractId":"CT000134","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":48900,"usageGb":2340,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0135","customerName":"株式会社品川ビジネスサポート","contractId":"CT000135","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":33200,"usageGb":1560,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0136","customerName":"株式会社品川メディアサービス","contractId":"CT000136","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":21500,"usageGb":4780,"invoiceStatus":"支払完了","dueDate":"2026/05/31","paidDate":"2026/05/27","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0137","customerName":"株式会社品川データソリューション","contractId":"CT000137","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/07","amount":59400,"usageGb":890,"invoiceStatus":"発行済み","dueDate":"2026/06/06","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0138","customerName":"株式会社品川オフィス管理","contractId":"CT000138","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":27890,"usageGb":2670,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/11","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0139","customerName":"株式会社品川クラウド文書","contractId":"CT000139","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":91200,"usageGb":3890,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0140","customerName":"株式会社品川総合倉庫","contractId":"CT000140","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":14560,"usageGb":1240,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0141","customerName":"株式会社池袋アーカイブ","contractId":"CT000141","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":43700,"usageGb":2980,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/21","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0142","customerName":"株式会社池袋ロジスティクス","contractId":"CT000142","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":58100,"usageGb":4320,"invoiceStatus":"発行済み","dueDate":"2026/06/04","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0143","customerName":"株式会社池袋文書管理","contractId":"CT000143","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/03","amount":76500,"usageGb":1870,"invoiceStatus":"支払完了","dueDate":"2026/06/02","paidDate":"2026/05/16","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0144","customerName":"株式会社池袋デジタル保管","contractId":"CT000144","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/07","amount":11230,"usageGb":3560,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0145","customerName":"株式会社池袋ビジネスサポート","contractId":"CT000145","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":34890,"usageGb":2140,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0146","customerName":"株式会社池袋メディアサービス","contractId":"CT000146","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/01","amount":67200,"usageGb":1650,"invoiceStatus":"支払完了","dueDate":"2026/05/31","paidDate":"2026/05/24","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0147","customerName":"株式会社池袋データソリューション","contractId":"CT000147","service":"スポット保管","billingMonth":"2026年5月","invoiceDate":"2026/05/06","amount":22800,"usageGb":4670,"invoiceStatus":"発行済み","dueDate":"2026/06/05","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"},{"customerId":"CUST0148","customerName":"株式会社池袋オフィス管理","contractId":"CT000148","service":"CLOUD CABINET + 文書保管","billingMonth":"2026年5月","invoiceDate":"2026/05/02","amount":88300,"usageGb":2380,"invoiceStatus":"支払完了","dueDate":"2026/06/01","paidDate":"2026/05/13","receiptStatus":"領収書発行済み","action":"再発行"},{"customerId":"CUST0149","customerName":"株式会社池袋クラウド文書","contractId":"CT000149","service":"CLOUD CABINET","billingMonth":"2026年5月","invoiceDate":"2026/05/05","amount":39100,"usageGb":3120,"invoiceStatus":"未発行","dueDate":"","paidDate":"","receiptStatus":"請求書未発行","action":"確認"},{"customerId":"CUST0150","customerName":"株式会社池袋総合倉庫","contractId":"CT000150","service":"文書保管サービス","billingMonth":"2026年5月","invoiceDate":"2026/05/04","amount":25670,"usageGb":1790,"invoiceStatus":"発行済み","dueDate":"2026/06/03","paidDate":"","receiptStatus":"入金待ち","action":"発行不可"}];
+    const WAREHOUSES = ["館林倉庫", "芝浦倉庫", "仙台倉庫", "千代田倉庫"];
+    rows.forEach((row, index) => {
+      row.warehouse = WAREHOUSES[index % WAREHOUSES.length];
+    });
+
+    const state = { status: "all", query: "", page: 1, pageSize: 25 };
+    const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
+    const number = new Intl.NumberFormat("ja-JP");
+    const statusClass = { "領収書発行済み": "badge-paid", "入金待ち": "badge-waiting", "請求書未発行": "badge-unissued" };
+    const invoiceClass = { "支払完了": "badge-paid", "発行済み": "badge-invoice", "未発行": "badge-unissued" };
+
+    document.querySelector("#updatedLabel").textContent = `最終更新: ${new Date().toLocaleDateString("ja-JP")}`;
+    document.querySelector("#searchInput").addEventListener("input", (event) => { state.query = event.target.value.trim().toLowerCase(); state.page = 1; render(); });
+    document.querySelector("#filterButtons").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-status]");
+      if (!button) return;
+      state.status = button.dataset.status;
+      state.page = 1;
+      document.querySelectorAll(".filter-button").forEach((item) => item.classList.toggle("active", item === button));
+      render();
+    });
+    document.querySelector("#pageSizeSelect").addEventListener("change", (event) => {
+      state.pageSize = Number(event.target.value);
+      state.page = 1;
+      render();
+    });
+
+    function render() {
+      renderMetrics();
+      renderTable();
+    }
+
+    function renderMetrics() {
+      const paid = rows.filter((row) => row.receiptStatus === "領収書発行済み");
+      const waiting = rows.filter((row) => row.receiptStatus === "入金待ち");
+      const unissued = rows.filter((row) => row.receiptStatus === "請求書未発行");
+      document.querySelector("#totalCount").textContent = `${number.format(rows.length)}件`;
+      document.querySelector("#receiptIssued").textContent = `${number.format(paid.length)}件`;
+      document.querySelector("#waitingCount").textContent = `${number.format(waiting.length)}件`;
+      document.querySelector("#unissuedCount").textContent = `${number.format(unissued.length)}件`;
+      document.querySelector("#receiptIssuedAmount").textContent = yen.format(sumAmount(paid));
+      document.querySelector("#waitingAmount").textContent = yen.format(sumAmount(waiting));
+      document.querySelector("#unissuedAmount").textContent = yen.format(sumAmount(unissued));
+    }
+
+    function renderTable() {
+      const filtered = getFilteredRows();
+      const totalPages = Math.max(1, Math.ceil(filtered.length / state.pageSize));
+      if (state.page > totalPages) state.page = totalPages;
+      const start = (state.page - 1) * state.pageSize;
+      const paged = filtered.slice(start, start + state.pageSize);
+      const body = document.querySelector("#tableBody");
+      body.replaceChildren(...paged.map(createRow));
+      document.querySelector("#emptyState").hidden = filtered.length > 0;
+      document.querySelector("#visibleCount").textContent = `${number.format(filtered.length)} / ${number.format(rows.length)}件`;
+      renderPagination(filtered.length, totalPages);
+    }
+
+    function renderPagination(filteredTotal, totalPages) {
+      const start = (state.page - 1) * state.pageSize + 1;
+      const end = Math.min(state.page * state.pageSize, filteredTotal);
+      document.querySelector("#paginationInfo").textContent =
+        filteredTotal === 0 ? "0件" : `${number.format(start)}–${number.format(end)} 件 / 全${number.format(filteredTotal)}件中`;
+
+      const controls = document.querySelector("#paginationControls");
+      controls.replaceChildren();
+
+      const addBtn = (label, page, active = false, disabled = false, ellipsis = false) => {
+        const btn = document.createElement("button");
+        btn.className = "page-button" + (active ? " active" : "") + (ellipsis ? " ellipsis" : "");
+        btn.textContent = label;
+        btn.disabled = disabled || ellipsis;
+        if (!disabled && !ellipsis && !active) btn.addEventListener("click", () => { state.page = page; renderTable(); });
+        controls.appendChild(btn);
+      };
+
+      addBtn("←", state.page - 1, false, state.page === 1);
+
+      const pages = buildPageRange(state.page, totalPages);
+      let prev = null;
+      for (const p of pages) {
+        if (prev !== null && p - prev > 1) addBtn("…", null, false, false, true);
+        addBtn(String(p), p, p === state.page);
+        prev = p;
+      }
+
+      addBtn("→", state.page + 1, false, state.page === totalPages);
+    }
+
+    function buildPageRange(current, total) {
+      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+      const pages = new Set([1, total, current]);
+      for (let d = 1; d <= 2; d++) {
+        if (current - d >= 1) pages.add(current - d);
+        if (current + d <= total) pages.add(current + d);
+      }
+      return [...pages].sort((a, b) => a - b);
+    }
+
+    function createRow(row) {
+      const tr = document.createElement("tr");
+      const canIssue = row.receiptStatus === "領収書発行済み";
+      tr.innerHTML = `
+        <td><div class="customer"><strong>${escapeHtml(row.customerName)}</strong><small>${escapeHtml(row.customerId)} / ${escapeHtml(row.contractId)}</small></div></td>
+        <td>${escapeHtml(row.service)}</td>
+        <td>${escapeHtml(row.warehouse)}</td>
+        <td>${escapeHtml(row.billingMonth)}</td>
+        <td><span class="badge ${invoiceClass[row.invoiceStatus]}">${escapeHtml(row.invoiceStatus)}</span></td>
+        <td class="amount">${yen.format(row.amount)}</td>
+        <td>${escapeHtml(row.dueDate || "-")}</td>
+        <td>${escapeHtml(row.paidDate || "-")}</td>
+        <td><button class="action-button ${canIssue ? "primary" : ""}" ${canIssue ? "" : "disabled"}>${escapeHtml(row.action)}</button></td>`;
+      return tr;
+    }
+
+    function getFilteredRows() {
+      return rows.filter((row) => {
+        const statusOk = state.status === "all" || row.receiptStatus === state.status;
+        const haystack = [row.customerName, row.customerId, row.contractId, row.service, row.warehouse, row.invoiceStatus, row.receiptStatus].join(" ").toLowerCase();
+        return statusOk && (!state.query || haystack.includes(state.query));
+      });
+    }
+    function sumAmount(items) { return items.reduce((total, row) => total + Number(row.amount || 0), 0); }
+    function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char])); }
+    render();
+  </script>
+</body>
+</html>
