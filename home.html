@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ダッシュボード | サンプル業務システム</title>
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- サイドバー -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <strong>Sample 業務システム</strong>
+        <span>マニュアル自動生成 テスト用</span>
+      </div>
+      <div class="nav-section">メニュー</div>
+      <a class="nav-item active" href="home.html"><span class="ic">🏠</span> ダッシュボード</a>
+      <a class="nav-item" href="billing.html"><span class="ic">📄</span> 請求管理</a>
+      <a class="nav-item disabled" href="#"><span class="ic">👥</span> 顧客管理</a>
+      <a class="nav-item disabled" href="#"><span class="ic">📊</span> レポート</a>
+      <div class="nav-section">その他</div>
+      <a class="nav-item" href="index.html"><span class="ic">📈</span> 請求状況（旧画面）</a>
+      <a class="nav-item disabled" href="#"><span class="ic">⚙️</span> 設定</a>
+    </aside>
+
+    <!-- コンテンツ -->
+    <div class="content">
+      <header class="topbar">
+        <div>
+          <h1>ダッシュボード</h1>
+          <div class="sub">サンプル業務システムへようこそ</div>
+        </div>
+        <div class="user"><span>山田 太郎</span><span class="avatar">山</span></div>
+      </header>
+      <main class="main">
+        <div class="hint">💡 これはマニュアル自動生成テスト用のサンプルです。「請求管理」→「再出力」と進むと、操作マニュアル化に適した複数ステップの操作フローを体験できます。</div>
+
+        <section class="summary-grid" aria-label="サマリー">
+          <article class="metric"><div class="metric-label">対象件数</div><div class="metric-value">128</div><div class="metric-note">2026年5月請求分</div></article>
+          <article class="metric"><div class="metric-label">領収書発行済み</div><div class="metric-value">86</div><div class="metric-note">¥12,480,000</div></article>
+          <article class="metric"><div class="metric-label">入金待ち</div><div class="metric-value">31</div><div class="metric-note">¥4,210,000</div></article>
+          <article class="metric"><div class="metric-label">請求書未発行</div><div class="metric-value">11</div><div class="metric-note">¥1,030,000</div></article>
+        </section>
+
+        <h2 style="font-size:16px;margin:24px 0 12px;">よく使う操作</h2>
+        <section class="cards-grid">
+          <a class="card-link" href="billing.html">
+            <div class="ic">📄</div>
+            <h3>請求管理</h3>
+            <p>請求データの一覧確認・再出力・設定を行います。</p>
+          </a>
+          <a class="card-link" href="billing.html#reoutput">
+            <div class="ic">🖨️</div>
+            <h3>請求データ 再出力</h3>
+            <p>対象を選んで請求データを再出力します（業務影響なし）。</p>
+          </a>
+          <a class="card-link" href="#">
+            <div class="ic">👥</div>
+            <h3>顧客管理</h3>
+            <p>顧客情報の参照・編集を行います。</p>
+          </a>
+          <a class="card-link" href="#">
+            <div class="ic">📊</div>
+            <h3>レポート</h3>
+            <p>月次・年次のレポートを出力します。</p>
+          </a>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

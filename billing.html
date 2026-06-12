@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>請求管理 | サンプル業務システム</title>
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <strong>Sample 業務システム</strong>
+        <span>マニュアル自動生成 テスト用</span>
+      </div>
+      <div class="nav-section">メニュー</div>
+      <a class="nav-item" href="home.html"><span class="ic">🏠</span> ダッシュボード</a>
+      <a class="nav-item active" href="billing.html"><span class="ic">📄</span> 請求管理</a>
+      <a class="nav-item disabled" href="#"><span class="ic">👥</span> 顧客管理</a>
+      <a class="nav-item disabled" href="#"><span class="ic">📊</span> レポート</a>
+      <div class="nav-section">その他</div>
+      <a class="nav-item" href="index.html"><span class="ic">📈</span> 請求状況（旧画面）</a>
+      <a class="nav-item disabled" href="#"><span class="ic">⚙️</span> 設定</a>
+    </aside>
+
+    <div class="content">
+      <header class="topbar">
+        <div>
+          <h1>請求管理</h1>
+          <div class="sub">請求データの確認・再出力</div>
+        </div>
+        <div class="user"><span>山田 太郎</span><span class="avatar">山</span></div>
+      </header>
+      <main class="main">
+        <nav class="breadcrumb">
+          <a href="home.html">ダッシュボード</a><span class="sep">›</span>
+          <span>請求管理</span>
+        </nav>
+
+        <div class="panel">
+          <div class="tabs" id="tabs">
+            <div class="tab active" data-tab="list">一覧</div>
+            <div class="tab" data-tab="reoutput">再出力</div>
+            <div class="tab" data-tab="settings">設定</div>
+          </div>
+
+          <!-- 一覧タブ -->
+          <div class="panel-body tab-panel" data-panel="list">
+            <p class="note">2026年5月の請求データ（サンプル）です。再出力を行う場合は上部の「再出力」タブを選択してください。</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>顧客</th><th>サービス</th><th>請求月</th><th>状況</th><th class="amount">請求金額</th></tr></thead>
+                <tbody>
+                  <tr><td>株式会社アルファ</td><td>倉庫保管 A</td><td>2026-05</td><td><span class="badge badge-paid">発行済み</span></td><td class="amount">¥240,000</td></tr>
+                  <tr><td>ベータ商事株式会社</td><td>倉庫保管 B</td><td>2026-05</td><td><span class="badge badge-waiting">入金待ち</span></td><td class="amount">¥180,000</td></tr>
+                  <tr><td>ガンマ物流株式会社</td><td>配送代行</td><td>2026-05</td><td><span class="badge badge-unissued">未発行</span></td><td class="amount">¥95,000</td></tr>
+                  <tr><td>デルタ工業株式会社</td><td>倉庫保管 A</td><td>2026-05</td><td><span class="badge badge-paid">発行済み</span></td><td class="amount">¥320,000</td></tr>
+                  <tr><td>イプシロン株式会社</td><td>梱包代行</td><td>2026-05</td><td><span class="badge badge-waiting">入金待ち</span></td><td class="amount">¥58,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 再出力タブ -->
+          <div class="panel-body tab-panel" data-panel="reoutput" hidden>
+            <div class="hint">🖨️ 請求データの再出力を行います。対象を選択し、プレビューで確認してから実行します。<strong>業務には影響しません。</strong></div>
+            <p class="note">操作は次の流れで進みます： 対象選択 → プレビュー確認 → 実行 → 完了</p>
+            <div class="toolbar">
+              <span class="note">再出力対象： 2026年5月 請求データ</span>
+              <a class="btn btn-primary" href="reoutput-select.html">対象を選んで再出力する →</a>
+            </div>
+          </div>
+
+          <!-- 設定タブ -->
+          <div class="panel-body tab-panel" data-panel="settings" hidden>
+            <div class="form-row"><label>デフォルト出力形式</label><select class="field"><option>PDF</option><option>CSV</option></select></div>
+            <div class="form-row"><label>出力先フォルダ</label><input class="field" value="/exports/billing" readonly></div>
+            <div class="form-row"><label>自動採番</label><select class="field"><option>有効</option><option>無効</option></select></div>
+            <p class="note" style="margin-top:14px;">※ サンプルのため設定の保存はできません。</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.getElementById("tabs");
+    const panels = document.querySelectorAll(".tab-panel");
+    function activate(name) {
+      tabs.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+      panels.forEach(p => p.hidden = (p.dataset.panel !== name));
+    }
+    tabs.addEventListener("click", (e) => {
+      const tab = e.target.closest(".tab");
+      if (tab) { activate(tab.dataset.tab); history.replaceState(null, "", "#" + tab.dataset.tab); }
+    });
+    // ダッシュボードから #reoutput で来た場合は再出力タブを開く
+    if (location.hash === "#reoutput") activate("reoutput");
+  </script>
+</body>
+</html>
