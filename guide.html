@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>例題 - 操作手順 | サンプル業務システム</title>
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <strong>Sample 業務システム</strong>
+        <span>マニュアル自動生成 テスト用</span>
+      </div>
+      <div class="nav-section">メニュー</div>
+      <a class="nav-item" href="home.html"><span class="ic">🏠</span> ダッシュボード</a>
+      <a class="nav-item" href="billing.html"><span class="ic">📄</span> 請求管理</a>
+      <a class="nav-item disabled" href="#"><span class="ic">👥</span> 顧客管理</a>
+      <a class="nav-item disabled" href="#"><span class="ic">📊</span> レポート</a>
+      <div class="nav-section">その他</div>
+      <a class="nav-item active" href="guide.html"><span class="ic">📘</span> 例題</a>
+      <a class="nav-item" href="index.html"><span class="ic">📈</span> 請求状況（旧画面）</a>
+      <a class="nav-item disabled" href="#"><span class="ic">⚙️</span> 設定</a>
+    </aside>
+
+    <div class="content">
+      <header class="topbar">
+        <div>
+          <h1>例題</h1>
+          <div class="sub">マニュアル化対象の操作手順</div>
+        </div>
+        <div class="user"><span>山田 太郎</span><span class="avatar">山</span></div>
+      </header>
+      <main class="main">
+        <div class="panel">
+          <div class="panel-header"><h2 class="panel-title">操作手順</h2></div>
+          <div class="panel-body">
+            <div class="hint">💡 先頭の <strong>@chrome</strong> はプラグイン形式にしてください！</div>
+            <pre style="margin:0;white-space:pre-wrap;font-family:inherit;line-height:1.9;">@chrome
+
+以下の操作手順とURLに従って、Chromeで実際に画面を操作しながら各ステップの
+スクリーンショットを撮影し、画面キャプチャ入りの操作マニュアルを作成してください。
+作成後、Google DriveプラグインでGoogleスライドとして保存してください。
+
+URL: https://yang-gittest.github.io/test-repo/home.html
+
+操作手順:
+1. ダッシュボード画面を開く
+2. 左メニューまたはカードから「請求管理」をクリック
+3. 「再出力」タブを選択する
+4. 「対象を選んで再出力する」をクリック
+5. 再出力したい請求データにチェックを入れ、出力形式を選ぶ
+6. 「プレビューへ進む」をクリック
+7. 出力内容（件数・合計金額）を確認する
+8. 「この内容で再出力を実行」をクリック
+9. 「再出力が完了しました」画面を確認する
+
+マニュアル要件:
+- 各ステップに「操作内容の説明」＋「該当画面のスクリーンショット」をセットで載せる
+- スライド1枚 = 1ステップ を目安にする
+- タイトルは「請求データ再出力 操作マニュアル」</pre>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
